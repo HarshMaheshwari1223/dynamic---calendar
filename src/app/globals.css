@@ -1,0 +1,308 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --azure: #1a9edc;
+  --azure-light: #38b2f0;
+  --azure-dark: #0a6fa8;
+  --cream: #f9f6f0;
+  --paper: #ffffff;
+  --ink-900: #261e1a;
+  --ink-700: #54443a;
+  --ink-400: #a48e76;
+  --ink-100: #eeeae0;
+  --shadow-calendar: 0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--cream);
+  background-image: radial-gradient(
+      ellipse at 20% 20%,
+      rgba(26, 158, 220, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 80% 80%,
+      rgba(84, 68, 58, 0.05) 0%,
+      transparent 60%
+    );
+  min-height: 100vh;
+  font-family: "DM Sans", system-ui, sans-serif;
+  color: var(--ink-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Calendar Paper Texture ─── */
+.paper-texture {
+  position: relative;
+}
+
+.paper-texture::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* ─── Spiral Binding ─── */
+.spiral-holes {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 24px;
+  height: 32px;
+  background: linear-gradient(
+    to bottom,
+    #c8c0b4 0%,
+    #e8e0d4 40%,
+    #b8b0a4 100%
+  );
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  overflow: visible;
+}
+
+.spiral-hole {
+  width: 14px;
+  height: 20px;
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 255, 255, 0.6),
+    #3a3530 60%
+  );
+  border-radius: 50%;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.spiral-hole::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 1px;
+}
+
+/* ─── Day cell states ─── */
+.day-cell {
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  border-radius: 8px;
+  user-select: none;
+}
+
+.day-cell:hover:not(.day-empty):not(.day-other-month) {
+  background: rgba(26, 158, 220, 0.1);
+  transform: scale(1.08);
+  z-index: 2;
+}
+
+.day-cell.day-start,
+.day-cell.day-end {
+  background: var(--azure) !important;
+  color: white !important;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(26, 158, 220, 0.4);
+  z-index: 3;
+}
+
+.day-cell.day-in-range {
+  background: rgba(26, 158, 220, 0.15);
+  border-radius: 0;
+}
+
+.day-cell.day-start {
+  border-radius: 8px 0 0 8px;
+}
+
+.day-cell.day-end {
+  border-radius: 0 8px 8px 0;
+}
+
+.day-cell.day-start.day-end {
+  border-radius: 8px;
+}
+
+.day-cell.day-today:not(.day-start):not(.day-end) {
+  border: 2px solid var(--azure);
+  color: var(--azure);
+  font-weight: 600;
+}
+
+.day-cell.day-weekend:not(.day-start):not(.day-end):not(.day-in-range) {
+  color: var(--azure-dark);
+}
+
+.day-cell.day-other-month {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.day-cell.day-holiday::after {
+  content: "•";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  color: #e85d4a;
+  line-height: 1;
+}
+
+/* ─── Notes textarea ─── */
+.notes-textarea {
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 24px;
+  color: var(--ink-700);
+  width: 100%;
+  caret-color: var(--azure);
+}
+
+.notes-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 23px,
+    rgba(164, 142, 118, 0.25) 23px,
+    rgba(164, 142, 118, 0.25) 24px
+  );
+  padding-top: 4px;
+}
+
+/* ─── Page flip animation ─── */
+.flip-enter {
+  animation: flipIn 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes flipIn {
+  0% {
+    opacity: 0;
+    transform: perspective(800px) rotateX(-8deg) translateY(-12px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(800px) rotateX(0deg) translateY(0);
+  }
+}
+
+/* ─── Theme toggle ─── */
+.theme-dark {
+  --cream: #1a1714;
+  --paper: #242019;
+  --ink-900: #f0ece4;
+  --ink-700: #c8c0b4;
+  --ink-400: #8a7260;
+  --ink-100: #2e2820;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-100);
+  border-radius: 2px;
+}
+
+/* ─── Mobile overrides ─── */
+@media (max-width: 640px) {
+  .day-cell:hover:not(.day-empty):not(.day-other-month) {
+    transform: scale(1.04);
+  }
+}
+
+/* ─── Page Flip Animations ─── */
+@keyframes calPageFlipRight {
+  0%   { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+  40%  { transform: perspective(1400px) rotateY(-12deg); opacity: 0.85; box-shadow: -20px 0 40px rgba(0,0,0,0.18); }
+  100% { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+}
+
+@keyframes calPageFlipLeft {
+  0%   { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+  40%  { transform: perspective(1400px) rotateY(12deg); opacity: 0.85; box-shadow: 20px 0 40px rgba(0,0,0,0.18); }
+  100% { transform: perspective(1400px) rotateY(0deg); opacity: 1; }
+}
+
+@keyframes pageFlipRight {
+  0%   { transform: scaleX(1); opacity: 1; }
+  50%  { transform: scaleX(0.92) skewY(-1deg); opacity: 0.7; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+@keyframes pageFlipLeft {
+  0%   { transform: scaleX(1); opacity: 1; }
+  50%  { transform: scaleX(0.92) skewY(1deg); opacity: 0.7; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+@keyframes flipShadow {
+  0%   { opacity: 0; }
+  40%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ─── Holiday Pulse ─── */
+@keyframes pulseHoliday {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(232,93,74,0); }
+  50%       { opacity: 0.7; box-shadow: 0 0 6px 2px rgba(232,93,74,0.15); }
+}
+
+/* ─── Fade slide in (holiday badge) ─── */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Slide up (month picker) ─── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ─── Day cell hover lift ─── */
+.day-cell:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ── Modal animations ── */
+@keyframes fadeBackdrop {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modalPop {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.94); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
